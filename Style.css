@@ -1,0 +1,458 @@
+/* Style.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Stili per i font di Google Fonts */
+.agdasima-regular {
+    font-family: "Agdasima", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.agdasima-bold {
+    font-family: "Agdasima", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* Stili globali per il body */
+body {
+    min-height: 100vh;
+    background-image: linear-gradient(#090530, #000000);
+    font-family: "Agdasima", sans-serif; /* Applica il font Agdasima globalmente */
+    color: aliceblue; /* Colore del testo predefinito */
+}
+
+/* Stili per l'header */
+header {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 10px 20px;
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #fcfcfc;
+}
+
+.LogoHeader {
+    max-width: 60px;
+    height: auto;
+    display: block;
+    margin: 0;
+}
+
+/* Stili per il contenitore della barra di ricerca */
+.search-container {
+    padding: 0;
+}
+
+/* Stili per l'input della barra di ricerca */
+#searchInput {
+    width: 250px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 15px;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px 3px rgba(0, 132, 161, 0.9);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    color: #333; /* Colore del testo input */
+}
+
+#searchInput::placeholder {
+    color: #888;
+}
+
+#searchInput:focus {
+    outline: none;
+    border-color: rgba(217, 110, 88, 0.9);
+    box-shadow: 0 0 15px 7px rgba(217, 110, 88, 0.8);
+}
+
+/* Stili per la lista (ul) - Menu di navigazione */
+nav ul { /* Target specifico per il menu di navigazione */
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+nav ul li a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+nav ul li a:hover {
+    background-color: rgba(0, 123, 255, 0.2);
+}
+
+/* Stili per i titoli H1 */
+h1 {
+    text-align: center;
+    color: #ffffff;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    font-family: "Megrim", cursive;
+}
+
+/* Stili per la TABELLA PRINCIPALE (index.html) */
+.table {
+    width: 90%;
+    margin: 20px auto;
+    border: #fcfcfc;
+    border-collapse: collapse;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    background-color: transparent; /* MODIFIED: Made table background transparent */
+    font-size: 1.1em;
+    color: aliceblue;
+}
+
+.table th, .table td {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 12px 15px;
+    text-align: center;
+    background-color: transparent; /* ADDED: Ensure cell backgrounds are transparent */
+}
+
+.table thead th {
+    background-color: transparent; /* MODIFIED: Made header background transparent */
+    color: white;
+    font-weight: bold;
+    cursor: pointer; /* Indica che l'intestazione è cliccabile per l'ordinamento */
+    position: relative; /* Per le frecce di ordinamento */
+}
+
+.table thead th.sorted-asc::after {
+    content: ' ▲';
+    color: white;
+    font-size: 0.8em;
+    position: absolute;
+    right: 5px;
+}
+
+.table thead th.sorted-desc::after {
+    content: ' ▼';
+    color: white;
+    font-size: 0.8em;
+    position: absolute;
+    right: 5px;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: transparent; /* MODIFIED: Made even row background transparent */
+}
+
+.table tbody tr:hover {
+    background-color: rgba(1, 24, 45, 0.5); /* MODIFIED: Subtle hover effect for transparency */
+}
+
+.table a {
+    color: #f9af55;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.table a:hover {
+    text-decoration: underline;
+}
+
+/* Stili per la TABELLA DI DETTAGLIO (pagine di dettaglio) */
+.detailTable {
+    width: 80%;
+    margin: 30px auto;
+    border-collapse: collapse;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+    background-color: transparent; /* MODIFIED: Made detail table background transparent */
+    font-size: 1.2em;
+    color: aliceblue;
+    text-align: center;
+}
+
+.detailTable th, .detailTable td {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 15px 20px;
+    text-align: center;
+    background-color: transparent; /* ADDED: Ensure detail cell backgrounds are transparent */
+}
+
+.detailTable th {
+    background-color: transparent; /* MODIFIED: Made detail header background transparent */
+    font-weight: bold;
+    width: 35%;
+}
+
+/* Stile per le immagini nelle tabelle (generico) */
+table img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Stile per le immagini nelle celle della tabella principale */
+td img {
+    max-width: 80px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Stile per le immagini di struttura nelle pagine di dettaglio */
+.detail-image {
+    max-width: 200px;
+    height: auto;
+}
+
+/* --- STILI PER IL PULSANTE "TORNA SU" E "TORNA ALLA LISTA" --- */
+
+/* Stili per il pulsante "Torna su" */
+#scrollToTopBtn {
+    display: none; /* DEVE ESSERE 'none' INIZIALMENTE, gestito dal JS */
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 1000;
+    border: none;
+    outline: none;
+    background-color: rgba(250, 249, 249, 0.8);
+    color: #000; /* Colore della freccia */
+    cursor: pointer;
+    padding: 12px 18px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    opacity: 0.9;
+}
+
+/* Stili specifici per l'icona SVG all'interno del pulsante "Torna su" */
+#scrollToTopBtn .arrow-icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+/* Your hover and active states remain the same */
+#scrollToTopBtn:hover {
+    background-color: rgba(255, 253, 252, 1);
+    transform: translateY(-5px) scale(1.05);
+    color: #000000;
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.4);
+    opacity: 1;
+}
+
+#scrollToTopBtn:active {
+    transform: translateY(-2px) scale(0.98);
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
+}
+
+/* Stili per il pulsante "Torna alla Lista" (solo freccia) */
+.back-to-list-button {
+    display: flex; /* Usa flex per centrare l'SVG */
+    align-items: center; /* Centra verticalmente l'SVG */
+    justify-content: center; /* Centra orizzontalmente l'SVG */
+    border: none;
+    outline: none;
+    background-color: transparent; /* Il background è SEMPRE trasparente */
+    color: #fff; /* Colore della freccia */
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%; /* Rende il contenitore circolare invisibile */
+    width: 50px; /* Dimensione dell'area cliccabile */
+    height: 50px; /* Dimensione dell'area cliccabile */
+    opacity: 1; /* Il pulsante è sempre visibile */
+    text-decoration: none; /* Rimuove la sottolineatura dal link */
+
+    /* ***** REINTRODUZIONE DEL POSIZIONAMENTO ASSOLUTO PER ALLINEAMENTO PRECISO ***** */
+    position: absolute;
+    left: 8%; /* Distanza dal bordo sinistro del .detail-header-container */
+    top: 50%;
+    transform: translateY(-50%); /* Centra verticalmente */
+}
+
+.back-to-list-button:hover {
+    box-shadow: none; /* Rimuovi l'ombra dal contenitore se non la vuoi */
+    opacity: 1; /* Mantiene l'opacità */
+}
+
+.back-to-list-button:active {
+    box-shadow: none;
+}
+
+/* Stili specifici per l'icona SVG della freccia sinistra */
+.back-to-list-button .arrow-icon-left {
+    width: 28px; /* Dimensione dell'SVG */
+    height: 28px;
+    transform: rotate(90deg); /* Lascia questa rotazione se la SVG punta in basso */
+    
+    fill: currentColor; /* Prende il colore dal genitore (.back-to-list-button) */
+    
+    /* Transizione per l'ombra e lo spostamento della freccia */
+    transition: transform 0.3s ease-out, filter 0.3s ease, fill 0.3s ease;
+    
+    /* Ombra (shade) sulla freccia stessa */
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+}
+
+/* Animazione e ombra aggiuntiva per la freccia quando il pulsante è in hover */
+.back-to-list-button:hover .arrow-icon-left {
+    transform: rotate(90deg) translateX(-5px);
+    /* L'ombra diventa più intensa */
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 1));
+}
+
+.back-to-list-button:active .arrow-icon-left {
+    transform: rotate(90deg) translateX(-2px) scale(0.95); /* Effetto clic: sposta meno e rimpicciolisci */
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+/* Nascondi completamente il testo del pulsante */
+.back-to-list-button .button-text {
+    display: none;
+}
+
+/* Adegua il contenitore del titolo e del pulsante */
+.detail-header-container {
+    display: flex; /* Mantiene il flexbox */
+    align-items: center; /* Allinea verticalmente gli elementi */
+    justify-content: center; /* Questo CENTRA il contenuto principale (h1) */
+    
+    margin-top: 30px;
+    margin-bottom: 20px;
+    
+    /* ***** ESSENZIALE PER IL POSIZIONAMENTO ASSOLUTO DEL PULSANTE ***** */
+    position: relative; 
+    
+    /* ***** IMPORTANTE: Aumenta il padding-left per fare spazio al pulsante ***** */
+    padding: 0 80px; /* Esempio: 80px di padding su entrambi i lati */
+}
+
+.detail-header-container h1 {
+    margin: 0; /* Rimuovi eventuali margini che potrebbero influire sul centraggio */
+}
+
+/* Rimuovi completamente o commenta le regole obsolete per il link "Torna alla Lista Principale" */
+p {
+    display: none;
+}
+
+/* --- NUOVE REGOLE PER LE FRASI H CON TOOLTIP --- */
+/* Stili per le frasi H con tooltip */
+.h-phrase-tooltip {
+    /* Colore leggermente diverso o più evidente per le frasi H */
+    color: #00b0b2; /* Un colore che si abbini ai link esistenti */
+    text-decoration: underline dotted; /* Sottolineatura tratteggiata per indicare il tooltip */
+    cursor: help; /* Cambia il cursore in un punto interrogativo */
+    transition: color 0.3s ease, text-decoration-color 0.3s ease; /* Transizione per un effetto più fluido */
+}
+
+.h-phrase-tooltip:hover {
+    color: white; /* Colore più chiaro o diverso al passaggio del mouse */
+    text-decoration: underline solid; /* Sottolineatura piena al passaggio del mouse */
+    text-decoration-color: #ffffff; /* Colore della sottolineatura al passaggio del mouse */
+}
+
+/* --- Stili per il pannello di selezione colonne --- */
+.column-selection-panel {
+    display: none; /* Inizialmente nascosto, gestito da JS */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(30, 30, 60, 0.95);
+    border: 1px solid #00b0b2;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 0 20px rgba(0, 176, 178, 0.5);
+    z-index: 1001; /* Sopra tutto il resto */
+    max-height: 80vh;
+    overflow-y: auto;
+    color: aliceblue;
+    text-align: center;
+}
+
+.column-selection-panel h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #ffffff;
+    font-family: "Megrim", cursive;
+}
+
+#columnCheckboxes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.column-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 176, 178, 0.4);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.column-checkbox-item:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-color: rgba(0, 176, 178, 0.7);
+}
+
+.column-checkbox-item input[type="checkbox"] {
+    transform: scale(1.2); /* Ingrandisce il checkbox */
+    accent-color: #f9af55; /* Colore dell'icona spuntata */
+    cursor: pointer;
+}
+
+.column-checkbox-item label {
+    font-size: 1em;
+    user-select: none; /* Impedisce la selezione del testo della label */
+}
+
+.column-selection-panel button#applyColumnsBtn {
+    background-color: #f9af55;
+    color: #090530;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.column-selection-panel button#applyColumnsBtn:hover {
+    background-color: #ffc27f;
+    transform: translateY(-2px);
+}
+
+.column-selection-panel button#applyColumnsBtn:active {
+    transform: translateY(0);
+    background-color: #e69d4d;
+}
+
+/* Stili per l'overlay quando il pannello è aperto */
+#overlay {
+    display: none; /* Nascosto di default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Sfondo semi-trasparente */
+    z-index: 1000; /* Sotto il pannello, sopra il resto */
+}
