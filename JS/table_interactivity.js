@@ -13,7 +13,7 @@ const toggleColumnsBtn = document.getElementById('toggleColumnsBtn');
 const mainTable = document.getElementById('mainTable');
 
 let currentData = [...ALL_DATA]; // Copia i dati originali per permettere modifiche (es. ordinamento, filtro)
-let visibleColumns = new Set(DEFAULT_VISIBLE_COLUMNS);
+let visibleColumns = DEFAULT_VISIBLE_COLUMNS || [];
 let sortColumn = 'Name'; // Colonna di default per l'ordinamento
 let sortDirection = 'asc'; // Direzione di default
 
@@ -30,7 +30,7 @@ function applyHPhraseTooltipToText(text) {
     // Regex per trovare codici H (es. H300, H350i) o EUH (es. EUH202, EUH208)
     // Ordina i match per lunghezza decrescente per evitare sostituzioni parziali (es. H360FD prima di H360F)
     const matches = Array.from(new Set(modifiedText.match(/\b(EUH\d{3}[A-Za-z0-9]*|H\d{3}[A-Za-z0-9]*)\b/g) || []))
-                         .sort((a, b) => b.length - a.length);
+                             .sort((a, b) => b.length - a.length);
 
     for (const hCode of matches) {
         const definition = H_PHRASES_DEFINITIONS[hCode];
@@ -105,7 +105,10 @@ function filterTable() {
             return value.includes(searchTerm);
         });
     });
-    sortTable(sortColumn, sortDirection, false); // Riordina i dati filtrati
+
+    // Ordina i dati filtrati e poi ripopola la tabella
+    sortTable(sortColumn, sortDirection, false); // Ordina i dati filtrati
+    populateTable(); // QUESTA È LA RIGA AGGIUNTA/VERIFICATA!
 }
 
 /**

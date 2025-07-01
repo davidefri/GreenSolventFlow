@@ -1,1 +1,7 @@
-h fraso
+far funzionare i toggle
+sistemare ui mobile
+mettere pulsanti su header (mail)
+implementa filtri
+implementa guida ghs
+implementa solubilità reciproca
+implementa tool p eb

@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import re
-import json # Importa il modulo 'json'
+import json
 
 # Dizionario delle definizioni delle frasi H e EUH in INGLESE
 h_phrases_definitions = {
@@ -80,20 +80,16 @@ def apply_h_phrase_tooltip(text_content):
     La gestione dei tooltip per la tabella principale (index.html) è affidata a JavaScript.
     """
     if not isinstance(text_content, str):
-        return str(text_content) if pd.notna(text_content) else '' # Assicura che sia una stringa, gestisce NaN
+        return str(text_content) if pd.notna(text_content) else ''
     
-    # Regex per trovare codici H (es. H300, H350i) o EUH (es. EUH202, EUH208)
     pattern = r'\b(EUH\d{3}[A-Za-z0-9]*|H\d{3}[A-Za-z0-9]*)\b'
     
-    # Usiamo un set per evitare di processare duplicati e ordiniamo per lunghezza decrescente
-    # per gestire H360FD prima di H360F (evita sostituzioni parziali)
     matches = sorted(list(set(re.findall(pattern, text_content))), key=len, reverse=True)
     
     modified_text = text_content
     for h_code in matches:
         definition = h_phrases_definitions.get(h_code, None)
         if definition:
-            # Usiamo re.sub con re.escape per gestire caratteri speciali se presenti nei codici
             modified_text = re.sub(r'\b' + re.escape(h_code) + r'\b', f'<span class="h-phrase-tooltip" title="{definition}">{h_code}</span>', modified_text)
     
     return modified_text
@@ -115,78 +111,63 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
         favicon_path (str): Il percorso del file favicon (relativo alla root del sito).
         css_path (str): Il percorso del file CSS (relativo alla root del sito).
         structure_images_folder (str): La cartella delle immagini di struttura (relativa alla root del sito).
-        js_folder (str): La cartella dei file JavaScript (relativa alla root del sito).
+        js_folder (str): La cartella dei file JavaScript (relativo alla root del sito).
     """
     df = pd.read_csv(csv_file, sep=';', decimal=',', na_values=[''], encoding='latin-1', low_memory=False)
 
-    # Pulisci i nomi delle colonne da spazi bianchi all'inizio/fine
     df.columns = df.columns.str.strip()
 
-    # Rimuovi la colonna 'Unnamed: 20' se esiste e contiene solo valori NaN
     if 'Unnamed: 20' in df.columns and df['Unnamed: 20'].isnull().all():
         df = df.drop(columns=['Unnamed: 20'])
         print("[INFO] Rimossa colonna 'Unnamed: 20' in quanto vuota.")
     
     initial_rows = len(df)
-    df['Name'] = df['Name'].replace('', pd.NA) # Sostituisci stringhe vuote con NaN
-    df.dropna(subset=['Name'], inplace=True) # Rimuovi righe con Name NaN
+    df['Name'] = df['Name'].replace('', pd.NA)
+    df.dropna(subset=['Name'], inplace=True)
     if len(df) < initial_rows:
         print(f"[ATTENZIONE] Rimosse {initial_rows - len(df)} righe con valore 'Name' mancante o vuoto.")
     else:
         print(f"[INFO] Trovate {len(df)} righe valide nel CSV.")
 
-    # Creazione della cartella di output se non esiste
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
         print(f"[INFO] Creata cartella di output: '{output_folder}'")
     else:
         print(f"[INFO] Cartella di output '{output_folder}' già esistente.")
 
-    # --- Prepara i dati per il JavaScript della tabella principale ---
-    # Converti il DataFrame in un formato adatto per JSON (lista di dizionari)
-    # Sostituisci i valori NaN con None per una corretta rappresentazione JSON
     data_for_js = df.fillna('').to_dict(orient='records')
 
-    # Per ogni riga, prepara il campo 'url' per la pagina di dettaglio
     for item in data_for_js:
         unique_id_raw = str(item['Name']).strip()
-        unique_id_filename = unique_id_raw.replace('\n', '_').replace('\r', '_').replace('\t', '_')
-        unique_id_filename = re.sub(r'[\\/:*?"<>|\s]', '_', unique_id_filename)
+        unique_id_filename = re.sub(r'[\\/:*?"<>|\s]', '_', unique_id_raw)
         unique_id_filename = re.sub(r'__+', '_', unique_id_filename)
         unique_id_filename = unique_id_filename.strip('_')
+        
         if not unique_id_filename:
-            # Questo caso dovrebbe essere già gestito da dropna sul 'Name'
-            # ma è una sicurezza in più se il nome si riduce a soli caratteri non validi
-            unique_id_filename = f"unnamed_entry_{data_for_js.index(item)}" # Usa l'indice della lista
+            unique_id_filename = f"unnamed_entry_{data_for_js.index(item)}"
+            print(f"[AVVISO] Il nome '{unique_id_raw}' ha generato un nome file vuoto. Usato fallback: '{unique_id_filename}'")
         
         item['detail_url'] = f"{output_folder}/{unique_id_filename}.html"
         
-        # Aggiungi il percorso dell'immagine di struttura, se presente
         if 'Structure' in item and item['Structure']:
             item['structure_img_src'] = f"{structure_images_folder}/{item['Structure']}"
         else:
-            item['structure_img_src'] = '' # Nessuna immagine di struttura
+            item['structure_img_src'] = ''
 
-    # Ottieni tutte le colonne disponibili, escluse quelle che non vuoi nel pannello di selezione
-    # Puoi personalizzare questa lista di esclusione
-    excluded_columns_from_selection = ['detail_url', 'structure_img_src'] # Campi aggiunti da Python per JS
+    excluded_columns_from_selection = ['detail_url', 'structure_img_src']
     all_potential_index_columns = [col for col in df.columns.tolist() if col not in excluded_columns_from_selection]
     
-    # Definisci le colonne inizialmente visibili nella tabella principale
-    default_visible_index_columns = ['Name', 'CAS', 'Structure'] # Colonne che vuoi visibili di default
+    default_visible_index_columns = ['Name', 'CAS', 'Structure']
 
-    # Serializza i dati e le configurazioni per il JavaScript
     json_data_for_js = json.dumps(data_for_js, ensure_ascii=False)
     json_all_columns = json.dumps(all_potential_index_columns, ensure_ascii=False)
     json_default_columns = json.dumps(default_visible_index_columns, ensure_ascii=False)
     json_h_phrases_definitions = json.dumps(h_phrases_definitions, ensure_ascii=False)
 
-    # --- Generazione delle pagine di dettaglio ---
     print("\n[INFO] Generazione delle pagine di dettaglio...")
     for index, row in df.iterrows():
         unique_id_raw = str(row['Name']).strip()
-        unique_id_filename = unique_id_raw.replace('\n', '_').replace('\r', '_').replace('\t', '_')
-        unique_id_filename = re.sub(r'[\\/:*?"<>|\s]', '_', unique_id_filename)
+        unique_id_filename = re.sub(r'[\\/:*?"<>|\s]', '_', unique_id_raw)
         unique_id_filename = re.sub(r'__+', '_', unique_id_filename)
         unique_id_filename = unique_id_filename.strip('_')
         
@@ -196,7 +177,6 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
 
         detail_filename = os.path.join(output_folder, f"{unique_id_filename}.html")
 
-        # HTML Header per la pagina di dettaglio
         detail_html_header = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -227,9 +207,7 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
 '''
         detail_table_rows = ""
         for col_name, value in row.items():
-            # Salta le colonne che non vuoi visualizzare nella pagina di dettaglio
-            # Ad esempio, 'Unnamed: 20' se non è stata rimossa, o altre colonne interne
-            if col_name in ['detail_url', 'structure_img_src']: # queste sono per JS
+            if col_name in ['detail_url', 'structure_img_src']:
                 continue
 
             display_value = ""
@@ -241,7 +219,7 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
                     display_value = "No structure available"
             else:
                 display_value = "" if pd.isna(value) else str(value)
-                display_value = apply_h_phrase_tooltip(display_value) # Applica tooltip H-phrase
+                display_value = apply_h_phrase_tooltip(display_value)
             
             detail_table_rows += f'''<tr>
                 <th>{col_name}</th>
@@ -249,7 +227,6 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
             </tr>
 '''
         
-        # HTML Footer per la pagina di dettaglio
         detail_html_footer = f'''
         </tbody>
     </table>
@@ -269,11 +246,9 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
             continue
     print("[INFO] Pagine di dettaglio generate.")
 
-    # --- Generazione della pagina principale (index.html) ---
     print("[INFO] Generazione del file 'index.html'...")
 
-    # HTML Header per la pagina principale
-    main_html_header = f'''<!DOCTYPE html>
+    full_main_html_content = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -303,7 +278,7 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
     <div id="column-selection-panel" class="column-selection-panel">
         <h2>Select Columns to Display</h2>
         <div id="columnCheckboxes">
-            </div>
+            {{}} </div>
         <button id="applyColumnsBtn">Apply</button>
     </div>
 
@@ -311,10 +286,10 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
     <table class="table" id="mainTable">
         <thead>
             <tr id="tableHeaderRow">
-                </tr>
+                {{}} </tr>
         </thead>
         <tbody id="tableBody">
-            </tbody>
+            {{}} </tbody>
     </table>
     <button id="scrollToTopBtn" title="Back to Top">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="arrow-icon">
@@ -327,7 +302,12 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
         const ALL_COLUMNS = {json_all_columns};
         const DEFAULT_VISIBLE_COLUMNS = {json_default_columns};
         const H_PHRASES_DEFINITIONS = {json_h_phrases_definitions};
-        const STRUCTURE_IMAGES_FOLDER = '{structure_images_folder}'; // Passa il percorso della cartella immagini
+        const STRUCTURE_IMAGES_FOLDER = '{structure_images_folder}';
+
+        // Aggiungi questi console.log per la diagnostica
+        console.log("DEFAULT_VISIBLE_COLUMNS (da Python nel HTML):", DEFAULT_VISIBLE_COLUMNS);
+        console.log("Contenuto di H_PHRASES_DEFINITIONS:", H_PHRASES_DEFINITIONS);
+        console.log("Script block custom diagnostics loaded.");
     </script>
     <script src="{js_folder}/table_interactivity.js"></script>
     <script src="{js_folder}/scroll.js"></script>
@@ -336,7 +316,7 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
 '''
     try:
         with open('index.html', 'w', encoding='utf-8') as f:
-            f.write(main_html_header) # Scrivi direttamente l'header che contiene tutti i dati JS e la struttura della tabella
+            f.write(full_main_html_content)
         print("[INFO] File 'index.html' generated successfully.")
     except OSError as e:
         print(f"[ERRORE] Impossibile scrivere il file 'index.html': {e}")
