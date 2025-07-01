@@ -272,20 +272,13 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
         </div>
 
     <button id="floatingButton" class="floating-button">
-        Apri Pannello
+        Filters
     </button>
 
     <div id="floatingPanel" class="floating-panel">
         <button class="close-button" id="closePanel">&times;</button>
-        <h2>Opzioni</h2>
-        <button class="panel-button">
-        <nav>
-        <ul>
-            <li><a href="#column-selection-panel" id="toggleColumnsBtn">Select Columns</a></li>
-            
-        </ul>
-    </nav>
-        </button>
+        <h2>Filter your results</h2>
+        <button class="panel-button" id="toggleColumnsBtn">Select Columns</button>
         <button class="panel-button">Opzione 2</button>
         <button class="panel-button">Opzione 3</button>
         <button class="panel-button">Contattaci</button>

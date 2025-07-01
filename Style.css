@@ -67,6 +67,7 @@ header {
 
 #searchInput::placeholder {
     color: #888;
+    text-align: center;
 }
 
 #searchInput:focus {
@@ -86,7 +87,7 @@ nav ul { /* Target specifico per il menu di navigazione */
 }
 
 nav ul li a {
-    color: #007bff;
+    color: #ffffff;
     text-decoration: none;
     font-weight: bold;
     padding: 5px 10px;
@@ -94,9 +95,7 @@ nav ul li a {
     transition: background-color 0.3s ease;
 }
 
-nav ul li a:hover {
-    background-color: rgba(0, 123, 255, 0.2);
-}
+
 
 /* --- NUOVI STILI PER I TASTI AGGIUNTIVI NELL'HEADER --- */
 .header-buttons {
@@ -498,16 +497,16 @@ p {
 .floating-button {
     font-family: "Agdasima", sans-serif;
     position: fixed;
-    top: 50%;
+    top: 30%;
     left: 0;
     transform: translateY(-50%);
     background-color: rgba(255, 255, 255, 0.3);
-    color: #090530;
-    padding: 15px 10px;
+    color: white;
+    padding: 10px 10px;
     border: none;
     border-radius: 0 10px 10px 0;
     cursor: pointer;
-    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 15px 7px rgba(255, 255, 255, 0.8);
     z-index: 1000;
     width: auto;
     min-width: 100px;
@@ -521,10 +520,10 @@ p {
 }
 
 .floating-button:hover {
-    background-color: rgba(255, 255, 255, 0.6); /* Più opaco in hover */
+    background-color: rgba(255, 255, 255, 0.3); /* Più opaco in hover */
     width: 130px; /* Aumenta la larghezza del pulsante al passaggio del mouse. Regola il valore a tuo piacimento. */
     /* RIMOSSO: animation:cubic-bezier(...) non va qui per le transizioni */
-    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 15px 7px rgba(217, 110, 88, 0.5);
     transform: translateY(-50%);
 }
 
@@ -541,7 +540,7 @@ p {
     left: -300px; /* Inizialmente nascosto */
     width: 280px;
     height: 100%;
-    background-color: #090530; /* Sfondo più scuro e trasparente */
+    background-color: #090530; 
     box-shadow: 2px 0 10px rgba(255, 255, 255, 0.3); /* Ombra bianca */
     z-index: 999;
     transition: left 0.3s ease-in-out;
@@ -571,7 +570,7 @@ p {
 /* Stile per i pulsanti all'interno del pannello (uniformati ai tuoi header-button) */
 .panel-button {
     background-color: rgba(0, 89, 132, 0.7); /* Bianco leggermente trasparente */
-    color: #090530; /* Testo scuro */
+    color: white; /* Testo scuro */
     padding: 12px 15px;
     border: none;
     border-radius: 5px; /* Bordi arrotondati come i tuoi header-button */
@@ -586,7 +585,8 @@ p {
 .panel-button:hover {
     background-color: rgba(255, 255, 255, 1); /* Più opaco in hover */
     transform: translateY(-2px); /* Lieve effetto di sollevamento */
-    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px 7px rgba(255, 255, 255, 0.3);
+    color: #090530;
 }
 
 .panel-button:active {
