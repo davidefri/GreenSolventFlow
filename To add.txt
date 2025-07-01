@@ -1,4 +1,4 @@
-far funzionare i toggle
+
 sistemare ui mobile
 mettere pulsanti su header (mail)
 implementa filtri

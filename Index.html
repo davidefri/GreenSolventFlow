@@ -14,16 +14,35 @@
     <header>
         <a href="index.html"> <img class="LogoHeader" src="PNG/IconGreenSolventFlow3.png" alt="icon">
         </a>
-        <div class="search-container">
+        <li><a href="mailto:davide.frigatti@gmail.com" target="_blank">Send us an Email</a></li>
+    </header>
+    <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search by name, CAS, etc.">
         </div>
-    </header>
-    <nav>
+        </div>
+
+    <button id="floatingButton" class="floating-button">
+        Apri Pannello
+    </button>
+
+    <div id="floatingPanel" class="floating-panel">
+        <button class="close-button" id="closePanel">&times;</button>
+        <h2>Opzioni</h2>
+        <button class="panel-button">
+        <nav>
         <ul>
             <li><a href="#column-selection-panel" id="toggleColumnsBtn">Select Columns</a></li>
-            <li><a href="mailto:davide.frigatti@gmail.com" target="_blank">Send us an Email</a></li>
+            
         </ul>
     </nav>
+        </button>
+        <button class="panel-button">Opzione 2</button>
+        <button class="panel-button">Opzione 3</button>
+        <button class="panel-button">Contattaci</button>
+    </div>
+
+    <script src="JS/panel.js"></script>
+        
 
     <div id="column-selection-panel" class="column-selection-panel">
         <h2>Select Columns to Display</h2>
@@ -36,10 +55,10 @@
     <table class="table" id="mainTable">
         <thead>
             <tr id="tableHeaderRow">
-                {} </tr>
+                </tr>
         </thead>
         <tbody id="tableBody">
-            {} </tbody>
+            </tbody>
     </table>
     <button id="scrollToTopBtn" title="Back to Top">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="arrow-icon">
