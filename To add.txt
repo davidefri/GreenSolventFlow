@@ -1,4 +1,4 @@
-
+far si che dopo selezione filter il default resti come ultima interazione utente
 sistemare ui mobile
 mettere pulsanti su header (mail)
 implementa filtri

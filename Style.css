@@ -52,22 +52,23 @@ header {
     text-align: center; /* Aggiunto: Nel caso ci sia del testo o elementi inline, li centra */
 }
 
-/* Stili per l'input della barra di ricerca */
+/* Stili per l'input della barra di ricerca e il suo placeholder */
 #searchInput {
-    width: 100%; /* Modificato: L'input prende il 100% della larghezza del suo contenitore */
-    padding: 8px 12px;
+    width: 100%;
+    padding: 10px 35px 10px 15px; /* Add padding for the 'x' button */
     border: 1px solid #ccc;
     border-radius: 20px;
-    font-size: 15px;
-    box-sizing: border-box;
-    box-shadow: 0 0 10px 3px rgba(0, 132, 161, 0.9);
+    font-size: 1.3rem; /* Questo è il font-size per il testo digitato e il placeholder */
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    color: #333; /* Colore del testo input */
+    font-family: 'Agdasima', sans-serif; /* Applica Agdasima */
+    text-align: center; /* Centra il testo */
 }
 
 #searchInput::placeholder {
     color: #888;
-    text-align: center;
+    /* font-size: large; */ /* Questa riga non è più strettamente necessaria se font-size è già su #searchInput */
+    /* text-align: center; */ /* Questa riga non è più strettamente necessaria se text-align è già su #searchInput */
 }
 
 #searchInput:focus {
@@ -75,7 +76,6 @@ header {
     border-color: rgba(217, 110, 88, 0.9);
     box-shadow: 0 0 15px 7px rgba(217, 110, 88, 0.8);
 }
-
 /* Stili per la lista (ul) - Menu di navigazione */
 nav ul { /* Target specifico per il menu di navigazione */
     list-style: none;
@@ -619,4 +619,49 @@ p {
 .close-button:active {
     transform: rotate(0deg) scale(0.9); /* Torna alla rotazione normale e rimpicciolisce leggermente al clic */
     text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+/* --- Search Input with Clear Button --- */
+.search-container {
+    position: relative; /* Essential for positioning the button inside */
+    width: 80%; /* Adjust as needed */
+    max-width: 600px;
+    margin: 20px auto;
+    display: flex; /* Allows button and input to sit side-by-side */
+    align-items: center;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 10px 35px 10px 15px; /* Add padding for the 'x' button */
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 1rem;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#searchInput:focus {
+    border-color: #007bff; /* Example focus color */
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    outline: none;
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 10px; /* Position from the right edge of the input */
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 5px;
+    height: 100%; /* Make button height same as input for vertical centering */
+    display: flex; /* For perfect vertical centering of the 'x' */
+    align-items: center; /* For perfect vertical centering of the 'x' */
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.clear-search-btn:hover {
+    color: #333;
 }

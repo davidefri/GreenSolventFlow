@@ -3,106 +3,83 @@ from rdkit import Chem
 from rdkit.Chem.Draw import rdMolDraw2D
 from rdkit.Chem import AllChem
 import os
-import cairosvg # Imports cairosvg for SVG to PNG conversion (still useful for the initial conversion, but not for final transparency)
-from PIL import Image # Imports Pillow for image manipulation
+import cairosvg
+from PIL import Image
+import warnings
+
+# Suppress InsecureRequestWarning if verify=False is used for debugging
+requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
+print("--- Script execution started ---")
 
 def get_smiles_from_cas(cas_number):
     """
-    Retrieves the canonical SMILES string of a molecule from PubChem by its CAS number.
-    Includes multiple fallback mechanisms if direct lookup fails.
+    Retrieves the canonical SMILES string of a molecule from PubChem by its CAS number
+    using a two-step process: CAS to CID via xref/rn, then CID to SMILES.
     """
-    # Attempt 1: Direct SMILES lookup by CAS number
-    url_direct_smiles = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cas/{cas_number}/property/CanonicalSMILES/JSON"
-    try:
-        response = requests.get(url_direct_smiles, timeout=10) # Added timeout
-        response.raise_for_status() # Raise an exception for HTTP errors (e.g., 400, 404)
-        data = response.json()
-        
-        # Check if PropertyTable and Properties exist and are not empty
-        if 'PropertyTable' in data and 'Properties' in data['PropertyTable'] and data['PropertyTable']['Properties']:
-            smiles = data['PropertyTable']['Properties'][0]['CanonicalSMILES']
-            print(f"SMILES found via direct CAS lookup for '{cas_number}'.")
-            return smiles
-        else:
-            print(f"Direct SMILES lookup for CAS '{cas_number}' returned no properties. Trying CID fallback...")
-    except requests.exceptions.RequestException as e: # Catch all request exceptions (ConnectionError, HTTPError, Timeout, HTTPError)
-        print(f"Direct SMILES lookup failed for CAS '{cas_number}': {e}. Trying CID fallback...")
-    except (KeyError, IndexError):
-        print(f"SMILES property not found or unexpected JSON structure in direct lookup for CAS '{cas_number}'. Trying CID fallback...")
+    cas_number = cas_number.strip()
+    print(f"  Attempting to retrieve SMILES for CAS: '{cas_number}'")
 
-    # Attempt 2: Fallback - Get CID by CAS number, then get SMILES by CID
-    url_get_cid = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cas/{cas_number}/cids/JSON"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36'
+    }
+
+    # Step 1: Get CID from CAS using xref/rn
+    url_cas_to_cid = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/xref/rn/{cas_number}/cids/JSON"
     try:
-        response_cid = requests.get(url_get_cid, timeout=10) # Added timeout
-        response_cid.raise_for_status()
+        print(f"    Trying CAS to CID lookup via xref/rn: {url_cas_to_cid}")
+        response_cid = requests.get(url_cas_to_cid, timeout=10, headers=headers, verify=False)
+        print(f"    CID lookup - Response status code: {response_cid.status_code}")
+        print(f"    CID lookup - Response text (first 500 chars): {response_cid.text[:500]}")
+
+        response_cid.raise_for_status() # Raise an exception for HTTP errors (4xx or 5xx)
         data_cid = response_cid.json()
-        
-        # Check if IdentifierList and CID exist and are not empty
+
         if 'IdentifierList' in data_cid and 'CID' in data_cid['IdentifierList'] and data_cid['IdentifierList']['CID']:
             cid = data_cid['IdentifierList']['CID'][0] # Take the first CID if multiple are returned
-            print(f"Found CID: {cid} for CAS '{cas_number}'. Now getting SMILES via CID...")
+            print(f"    CID '{cid}' found for CAS '{cas_number}'.")
 
-            # Now get SMILES using the retrieved CID
-            url_smiles_from_cid = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/property/CanonicalSMILES/JSON"
-            response_smiles = requests.get(url_smiles_from_cid, timeout=10) # Added timeout
+            # Step 2: Get SMILES from CID using TXT format for single property, using 'SMILES' property
+            url_cid_to_smiles = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/property/SMILES/TXT" # Changed to 'SMILES'
+            print(f"    Trying CID to SMILES lookup (TXT format, 'SMILES' property): {url_cid_to_smiles}")
+            response_smiles = requests.get(url_cid_to_smiles, timeout=10, headers=headers, verify=False)
+            print(f"    SMILES lookup - Response status code: {response_smiles.status_code}")
+            print(f"    SMILES lookup - Response text (first 500 chars): {response_smiles.text[:500]}")
+
             response_smiles.raise_for_status()
-            data_smiles = response_smiles.json()
-            
-            # Check if PropertyTable and Properties exist and are not empty
-            if 'PropertyTable' in data_smiles and 'Properties' in data_smiles['PropertyTable'] and data_smiles['PropertyTable']['Properties']:
-                smiles_from_cid = data_smiles['PropertyTable']['Properties'][0]['CanonicalSMILES']
-                print(f"SMILES found via CID fallback for '{cas_number}'.")
-                return smiles_from_cid
+            smiles = response_smiles.text.strip() # Get plain text and strip whitespace
+
+            if smiles:
+                print(f"    SMILES found for '{cas_number}'.")
+                return smiles
             else:
-                print(f"SMILES property not found via CID '{cid}' for CAS '{cas_number}'. Trying name search fallback...")
+                print(f"    SMILES property not found in TXT response for CID '{cid}' derived from CAS '{cas_number}'.")
         else:
-            print(f"No CID found for CAS '{cas_number}'. Trying name search fallback...")
+            print(f"    CID not found in response for CAS '{cas_number}' via xref/rn.")
+
     except requests.exceptions.RequestException as e:
-        print(f"Error in CID fallback for CAS '{cas_number}': {e}. Trying name search fallback...")
+        print(f"    API request failed for CAS '{cas_number}': {e}")
     except (KeyError, IndexError):
-        print(f"CID or SMILES property structure unexpected in CID fallback for CAS '{cas_number}'. Trying name search fallback...")
+        print(f"    CID property not found or unexpected JSON structure for CAS '{cas_number}'.")
+    except Exception as e:
+        print(f"    An unexpected error occurred for CAS '{cas_number}': {e}")
 
-    # Attempt 3: Fallback - Search by "name" (using CAS number as name)
-    url_search_by_name = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{cas_number}/property/CanonicalSMILES/JSON"
-    print(f"Attempting to find SMILES for CAS '{cas_number}' by treating it as a compound name...")
-    try:
-        response_name = requests.get(url_search_by_name, timeout=10)
-        response_name.raise_for_status()
-        data_name = response_name.json()
-
-        if 'PropertyTable' in data_name and 'Properties' in data_name['PropertyTable'] and data_name['PropertyTable']['Properties']:
-            smiles_from_name = data_name['PropertyTable']['Properties'][0]['CanonicalSMILES']
-            print(f"SMILES found via name search fallback for '{cas_number}'.")
-            return smiles_from_name
-        else:
-            print(f"SMILES property not found via name search for CAS '{cas_number}'.")
-    except requests.exceptions.RequestException as e:
-        print(f"Error in name search fallback for CAS '{cas_number}': {e}")
-    except (KeyError, IndexError):
-        print(f"SMILES property not found or unexpected JSON structure in name search fallback for CAS '{cas_number}'.")
-
-    return None # If all attempts fail to retrieve SMILES
-
+    print(f"  All attempts failed to retrieve SMILES for CAS '{cas_number}'.")
+    return None
 
 def get_molecules_from_file(filepath):
     """
     Reads molecule identifiers (e.g., CAS numbers) from a text file, one per line.
-
-    Args:
-        filepath (str): The path to the text file containing molecule identifiers.
-
-    Returns:
-        list: A list of molecule identifiers.
     """
     identifiers = []
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             for line in f:
-                identifier = line.strip() # Remove leading/trailing whitespace
-                if identifier: # Add non-empty lines
+                identifier = line.strip()
+                if identifier:
                     identifiers.append(identifier)
     except FileNotFoundError:
-        print(f"Error: The file '{filepath}' was not found.")
+        print(f"Error: The file '{filepath}' was not found. Please ensure it's in the correct directory.")
         return []
     except Exception as e:
         print(f"An error occurred while reading the file '{filepath}': {e}")
@@ -112,124 +89,114 @@ def get_molecules_from_file(filepath):
 def generate_molecule_png_white_transparent(identifier, output_folder="molecules_png_white_transparent"):
     """
     Generates a PNG image of a molecule with a white structure on a transparent background.
-    This method first generates a black structure on a white background, then post-processes it
-    using Pillow to invert colors and add transparency.
-
-    Args:
-        identifier (str): The identifier of the molecule (e.g., CAS number).
-        output_folder (str): The folder where the generated PNG images will be saved.
     """
-    os.makedirs(output_folder, exist_ok=True)
+    print(f"  [generate_molecule_png] Attempting to process identifier: {identifier}")
 
-    # Use the identifier (CAS number) to get the SMILES string
-    smiles = get_smiles_from_cas(identifier)
-    if smiles:
+    try:
+        os.makedirs(output_folder, exist_ok=True)
+        print(f"  [generate_molecule_png] Ensured output folder exists: {output_folder}")
+
+        smiles = get_smiles_from_cas(identifier)
+        if not smiles:
+            print(f"  [generate_molecule_png] No SMILES retrieved for '{identifier}', skipping image generation.")
+            return
+
+        print(f"  [generate_molecule_png] SMILES retrieved for '{identifier}': {smiles}")
+
         try:
             mol = Chem.MolFromSmiles(smiles)
-            if mol:
-                AllChem.Compute2DCoords(mol)
+            if not mol:
+                print(f"  [generate_molecule_png] Could not create RDKit molecule object from SMILES for CAS '{identifier}'.")
+                return
 
-                # --- Phase 1: SVG Drawing with RDKit (black structure on white background) ---
-                # The goal is to obtain a well-defined molecule in black on a white background
-                # to facilitate subsequent post-processing with Pillow.
-                drawer = rdMolDraw2D.MolDraw2DSVG(300, 300) # Set image dimensions
+            AllChem.Compute2DCoords(mol)
+            print(f"  [generate_molecule_png] RDKit molecule created and 2D coords computed for '{identifier}'.")
 
-                # Set the RDKit drawing background to solid white for now.
-                drawer.drawOptions().bgColor = (1, 1, 1, 1) # Opaque white
+            # --- Phase 1: SVG Drawing with RDKit (black structure on white background) ---
+            drawer = rdMolDraw2D.MolDraw2DSVG(300, 300)
+            drawer.drawOptions().bgColor = (1, 1, 1, 1)
+            black = (0, 0, 0, 1)
+            drawer.drawOptions().defaultColor = black
+            drawer.drawOptions().atomPalette = {
+                6: black, 7: black, 8: black, 9: black, 15: black,
+                16: black, 17: black, 35: black, 53: black, 1: black,
+            }
+            drawer.drawOptions().bondPalette = {
+                Chem.rdchem.BondType.SINGLE: black, Chem.rdchem.BondType.DOUBLE: black,
+                Chem.rdchem.BondType.TRIPLE: black, Chem.rdchem.BondType.AROMATIC: black,
+            }
+            drawer.drawOptions().bondLineWidth = 2
+            drawer.drawOptions().atomLabelFontSize = 18
+            drawer.drawOptions().addStereoAnnotation = True
+            drawer.drawOptions().useWedgeBond = True
+            drawer.drawOptions().prepareMolsForDrawing = True
+            drawer.drawOptions().addAtomIndices = False
 
-                # Set structure colors (atoms, bonds, text) to solid black.
-                black = (0, 0, 0, 1) # Opaque black
+            drawer.DrawMolecule(mol)
+            drawer.FinishDrawing()
+            svg_data = drawer.GetDrawingText()
+            print(f"  [generate_molecule_png] SVG data generated for '{identifier}'.")
 
-                drawer.drawOptions().defaultColor = black
-                drawer.drawOptions().atomPalette = {
-                    6: black,  # Carbon (C)
-                    7: black,  # Nitrogen (N)
-                    8: black,  # Oxygen (O)
-                    9: black,  # Fluorine (F)
-                    15: black, # Phosphorus (P)
-                    16: black, # Sulfur (S)
-                    17: black, # Chlorine (Cl)
-                    35: black, # Bromine (Br)
-                    53: black, # Iodine (I)
-                    1: black,  # Hydrogen (H)
-                }
-                drawer.drawOptions().bondPalette = {
-                    Chem.rdchem.BondType.SINGLE: black,
-                    Chem.rdchem.BondType.DOUBLE: black,
-                    Chem.rdchem.BondType.TRIPLE: black,
-                    Chem.rdchem.BondType.AROMATIC: black,
-                }
+            temp_output_filename = f"{identifier.replace(' ', '_')}_temp.png"
+            temp_output_path_png = os.path.join(output_folder, temp_output_filename)
+            print(f"  [generate_molecule_png] Temporary PNG path: {temp_output_path_png}")
 
-                # Other drawing options (maintained for quality)
-                drawer.drawOptions().bondLineWidth = 2
-                drawer.drawOptions().atomLabelFontSize = 18
-                drawer.drawOptions().addStereoAnnotation = True
-                drawer.drawOptions().useWedgeBond = True
-                drawer.drawOptions().prepareMolsForDrawing = True
-                drawer.drawOptions().addAtomIndices = False
+            # Convert SVG to PNG with cairosvg
+            cairosvg.svg2png(bytestring=svg_data.encode('utf-8'), write_to=temp_output_path_png,
+                             output_width=300, output_height=300)
+            print(f"  [generate_molecule_png] Temporary PNG created via cairosvg for '{identifier}'.")
 
-                drawer.DrawMolecule(mol)
-                drawer.FinishDrawing()
+            # --- Phase 2: Post-processing with Pillow for transparency and white colors ---
+            final_output_filename = f"{identifier.replace(' ', '_')}.png"
+            final_output_path_png = os.path.join(output_folder, final_output_filename)
+            print(f"  [generate_molecule_png] Final PNG path: {final_output_path_png}")
 
-                svg_data = drawer.GetDrawingText()
+            img = Image.open(temp_output_path_png).convert("RGBA")
+            datas = img.getdata()
 
-                # Path for the temporary image (black on white)
-                # Use the identifier (CAS number) for the filename
-                temp_output_path_png = os.path.join(output_folder, f"{identifier.replace(' ', '_')}_temp.png")
+            new_data = []
+            white_bg_threshold = 245
+            black_mol_threshold = 10
 
-                # Convert SVG to PNG with cairosvg (no transparency here, handled by Pillow later)
-                cairosvg.svg2png(bytestring=svg_data.encode('utf-8'), write_to=temp_output_path_png,
-                                 output_width=300, output_height=300) # No background_color for now
+            for item in datas:
+                r, g, b, a = item
+                if r > white_bg_threshold and g > white_bg_threshold and b > white_bg_threshold:
+                    new_data.append((255, 255, 255, 0)) # Keep white but make transparent
+                elif r < black_mol_threshold and g < black_mol_threshold and b < black_mol_threshold:
+                    new_data.append((255, 255, 255, 255)) # Opaque white
+                else:
+                    new_data.append((255, 255, 255, a)) # Convert to white, keep original alpha
+            
+            img.putdata(new_data)
+            img.save(final_output_path_png, "PNG")
+            print(f"  [generate_molecule_png] Final PNG saved for '{identifier}'.")
 
-                # --- Phase 2: Post-processing with Pillow for transparency and white colors ---
-                # Use the identifier (CAS number) for the final filename
-                final_output_path_png = os.path.join(output_folder, f"{identifier.replace(' ', '_')}.png")
-
-                img = Image.open(temp_output_path_png).convert("RGBA")
-                datas = img.getdata()
-
-                new_data = []
-                # Define a tolerance for colors due to anti-aliasing
-                white_bg_threshold = 245 # Almost white
-                black_mol_threshold = 10 # Almost black
-
-                for item in datas:
-                    r, g, b, a = item
-                    # If the pixel is close to white (background), make it transparent
-                    if r > white_bg_threshold and g > white_bg_threshold and b > white_bg_threshold:
-                        new_data.append((255, 255, 255, 0)) # Keep white but make transparent
-                    # If the pixel is close to black (structure), make it opaque white
-                    elif r < black_mol_threshold and g < black_mol_threshold and b < black_mol_threshold:
-                        new_data.append((255, 255, 255, 255)) # Opaque white
-                    else:
-                        # For intermediate colors (anti-aliasing), convert to white while preserving alpha
-                        # You can refine this or convert to pure opaque white if you prefer a sharper look
-                        new_data.append((255, 255, 255, a)) # Convert to white, keep original alpha
-                
-                img.putdata(new_data)
-                img.save(final_output_path_png, "PNG")
-
-                # Remove the temporary PNG file
+            # Remove the temporary PNG file
+            if os.path.exists(temp_output_path_png):
                 os.remove(temp_output_path_png)
-
-                print(f"Structure for CAS '{identifier}' saved to '{final_output_path_png}' with white structure and transparent background.")
+                print(f"  [generate_molecule_png] Removed temporary PNG for '{identifier}'.")
             else:
-                print(f"Could not create molecule object from SMILES for CAS '{identifier}'.")
+                print(f"  [generate_molecule_png] Warning: Temporary PNG for '{identifier}' not found for removal.")
+
+            print(f"Structure for CAS '{identifier}' saved to '{final_output_path_png}' with white structure and transparent background.")
         except Exception as e:
-            print(f"Error generating image for CAS '{identifier}': {e}")
-    else:
-        print(f"Could not generate image for CAS '{identifier}' without a valid SMILES string.")
+            print(f"  [generate_molecule_png] Inner Error generating image for CAS '{identifier}': {e}")
+    except Exception as e:
+        print(f"  [generate_molecule_png] Outer Error processing CAS '{identifier}': {e}")
 
-# --- Usage Example: Read molecules from a text file ---
-# Specify the path to your text file here
-# This file should contain CAS numbers, one per line.
-molecules_filepath = "molecules.txt" # Change this to your actual file path
+# --- Main execution block ---
+molecules_filepath = "molecules.txt"
 
-# Get the list of CAS numbers from the file
+print(f"Attempting to read molecules from: {molecules_filepath}")
 cas_numbers_to_generate = get_molecules_from_file(molecules_filepath)
+print(f"Found CAS numbers: {cas_numbers_to_generate}")
 
 if cas_numbers_to_generate:
+    print(f"Starting image generation for {len(cas_numbers_to_generate)} molecules.")
     for cas_num in cas_numbers_to_generate:
         generate_molecule_png_white_transparent(cas_num)
+    print("Finished processing all CAS numbers.")
 else:
     print(f"No CAS numbers found in '{molecules_filepath}' or file not accessible. Please check the file and path.")
+
+print("--- Script execution finished ---")

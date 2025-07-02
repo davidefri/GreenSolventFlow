@@ -277,4 +277,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // filterTable() gestirà l'applicazione del filtro di ricerca iniziale (se presente),
     // l'ordinamento predefinito e la popolare della tabella.
     filterTable();
+    // --- Clear Search Button Logic ---
+const searchInput = document.getElementById('searchInput');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+// Function to toggle clear button visibility
+function toggleClearButton() {
+    if (searchInput.value.length > 0) {
+        clearSearchBtn.style.display = 'flex'; // Use 'flex' because we set display:flex in CSS
+    } else {
+        clearSearchBtn.style.display = 'none';
+    }
+}
+
+// Event listener for input changes to show/hide the button
+searchInput.addEventListener('input', () => {
+    toggleClearButton();
+    // Also trigger your search filter logic here if it's not already on 'input'
+    // For example: filterTable(searchInput.value);
+});
+
+// Event listener for the clear button click
+clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = ''; // Clear the input field
+    toggleClearButton(); // Hide the button immediately
+    // Re-filter the table to show all results (or whatever your default state is)
+    filterTable(''); // Assuming you have a filterTable function
+});
+
+// Initial check in case there's pre-filled text on page load
+document.addEventListener('DOMContentLoaded', toggleClearButton);
+
+// --- Existing table interactivity code (make sure to keep this) ---
+// ... (your existing filterTable function and other interactivity code) ...
 });

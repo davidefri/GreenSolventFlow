@@ -267,8 +267,9 @@ def generate_html_pages(csv_file='dati_solvente.csv', output_folder='output_page
         <li><a href="mailto:davide.frigatti@gmail.com" target="_blank">Send us an Email</a></li>
     </header>
     <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search by name, CAS, etc.">
-        </div>
+        <input type="text" id="searchInput" placeholder="Search by name, CAS, etc.">
+        <button id="clearSearchBtn" class="clear-search-btn" style="display: none;">&times;</button>
+    </div>
         </div>
 
     <button id="floatingButton" class="floating-button">
